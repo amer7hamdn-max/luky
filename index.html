@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دولاب الحظ الذكي</title>
+    <style>
+        /* إعدادات الخلفية العامة والتمركز الإجباري */
+        body {
+            background-color: #1a1a2e;
+            color: #ffffff;
+            font-family: Tahoma, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* صندوق العداد العلوي */
+        .energy-box {
+            width: 320px;
+            margin: 0 auto 20px auto;
+            background: #162447;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .title-text {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+
+        .progress-container {
+            background-color: #1f4068;
+            border-radius: 15px;
+            padding: 2px;
+        }
+
+        .progress-bar {
+            background: #4caf50;
+            height: 20px;
+            border-radius: 15px;
+            line-height: 20px;
+            font-weight: bold;
+            color: white;
+            font-size: 12px;
+            width: 70%;
+        }
+
+        .status-text {
+            margin: 10px 0 0 0;
+            font-size: 13px;
+            color: #b5e2fa;
+        }
+
+        /* الصندوق الحاضن لتوسط الدولاب والسهم معاً */
+        .wheel-outer-wrapper {
+            position: relative;
+            width: 310px;       
+            height: 310px;
+            margin: 40px auto 0 auto; 
+        }
+
+        /* تثبيت موقع السهم فوق الدولاب مباشرة وفي المنتصف تماماً */
+        .arrow-indicator {
+            position: absolute;
+            top: -28px;         
+            left: 50%;          
+            margin-left: -15px; 
+            width: 30px;
+            height: 30px;
+            font-size: 32px;
+            color: #e43f5a;     
+            z-index: 999;       
+            line-height: 30px;
+        }
+
+        canvas {
+            display: block;
+            border: 5px solid #1f4068;
+            border-radius: 50%;
+            background-color: #162447;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="energy-box">
+        <h3 class="title-text">مستوى جاهزية طاقة الدولاب</h3>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">70%</div>
+        </div>
+        <p class="status-text" id="statusText">تم رصد طاقات دفع جديدة.. اقتربنا من الدوران!</p>
+    </div>
+
+    <div class="wheel-outer-wrapper">
+        <div class="arrow-indicator">▼</div>
+        <canvas id="wheel" width="300" height="300"></canvas>
+    </div>
+
+    <script>
+        var canvas = document.getElementById('wheel');
+        var ctx = canvas.getContext('2d');
+
+        // مصفوفة الخانات الـ 20 المتباعدة
+        var sectors = [
+            { label: "الجراند 30 الف", type: "grand", color: "#FFD700" },      
+            { label: "حظ اوفر", type: "lose", color: "#162447" },
+            { label: "حظ اوفر", type: "lose", color: "#1f4068" },
+            { label: "حظ اوفر", type: "lose", color: "#162447" },
+            { label: "جائزة 5 آلاف", type: "small", color: "#8bc34a" },        
+            { label: "حظ اوفر", type: "lose", color: "#1f4068" },
+            { label: "حظ اوفر", type: "lose", color: "#162447" },
+            { label: "حظ اوفر", type: "lose", color: "#1f4068" },
+            { label: "المتوسطة 15 الف", type: "medium", color: "#e43f5a" },     
+            { label: "حظ اوفر", type: "lose", color: "#162447" },
+            { label: "حظ اوفر", type: "lose", color: "#1f4068" },
+            { label: "حظ اوفر", type: "lose", color: "#162447" },
+            { label: "جائزة 5 آلاف", type: "small", color: "#8bc34a" },        
+            { label: "حظ اوفر", type: "lose", color: "#1f4068" },
+            { label: "حظ اوفر", type: "lose", color: "#162447" },
+            { label: "حظ اوفر", type: "lose", color: "#1f4068" },
+            { label: "حظ اوفر", type: "lose", color: "#162447" },
+            { label: "حظ اوفر", type: "lose", color: "#1f4068" },
+            { label: "حظ اوفر", type: "lose", color: "#162447" },
+            { label: "حظ اوفر", type: "lose", color: "#1f4068" }
+        ];
+
+        var numSectors = sectors.length;
+        var arc = 2 * Math.PI / numSectors;
+
+        // دالة رسم الدولاب المتوافقة مع المتصفحات القديمة والحديثة
+        function drawWheel() {
+            ctx.clearRect(0, 0, 300, 300);
+            for (var i = 0; i < numSectors; i++) {
+                var angle = i * arc;
+                
+                ctx.fillStyle = sectors[i].color;
+                ctx.beginPath();
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 145, angle, angle + arc);
+                ctx.lineTo(150, 150);
+                ctx.fill();
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(150, 150);
+                ctx.rotate(angle + arc / 2);
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+                
+                if (sectors[i].type !== "lose") {
+                    ctx.fillStyle = "#000000"; 
+                    ctx.font = "bold 10px Tahoma";
+                } else {
+                    ctx.fillStyle = "#ffffff"; 
+                    ctx.font = "9px Tahoma";
+                }
+                
+                ctx.fillText(sectors[i].label, 135, 0);
+                ctx.restore();
+            }
+            
+            // دائرة السنتر المركزية
+            ctx.beginPath();
+            ctx.arc(150, 150, 15, 0, 2 * Math.PI);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        drawWheel();
+
+        // محاكاة عداد شحن الطاقة
+        function listenToBackend() {
+            var currentEnergy = 70;
+            var progressBar = document.getElementById('progressBar');
+            var statusText = document.getElementById('statusText');
+            
+            var interval = setInterval(function() {
+                if (currentEnergy >= 100) {
+                    clearInterval(interval);
+                    progressBar.style.width = "100%";
+                    progressBar.innerHTML = "100%";
+                    statusText.innerHTML = "اكتملت الطاقة المئوية! ينطلق الدولاب الآن تلقائياً...";
+                    startAutomaticSpin(); 
+                } else {
+                    currentEnergy += 10;
+                    progressBar.style.width = currentEnergy + "%";
+                    progressBar.innerHTML = currentEnergy + "%";
+                }
+            }, 1000);
+        }
+
+        // دالة الدوران التلقائي العشوائي التقليدي لضمان سلاسة الحركة وتغير النتائج
+        function startAutomaticSpin() {
+            var currentRotation = 0;
+            // سرعة عشوائية متغيرة في كل مرة
+            var speed = 0.65 + (Math.random() * 0.2); 
+            
+            var timer = setInterval(function() {
+                if (speed < 0.005) {
+                    clearInterval(timer);
+                    
+                    // حساب النتيجة الدقيقة المتطابقة مع موقع السهم العلوي
+                    var normalizedRotation = currentRotation % (2 * Math.PI);
+                    var winningIndex = Math.floor((3.5 * Math.PI - normalizedRotation) / arc) % numSectors;
+                    var resultSector = sectors[winningIndex];
+                    
+                    if (resultSector.type !== "lose") {
+                        alert("مبروك!! استقر الدولاب بدقة على: " + resultSector.label + "\n\nالتقط لقطة شاشة الآن فوراً وأرسلها للمجموعة لتسلم جائزتك الكاش!");
+                    } else {
+                        alert("حظ أوفر! استقر الدولاب على خانة حظ اوفر. طاقة الدورة الجديدة انطلقت للتو، جرب شحن رصيدك للمحاولة مجدداً.");
+                    }
+                    return;
+                }
+                speed *= 0.984; // تباطؤ تدريجي آمن
+                currentRotation += speed;
+                canvas.style.transform = "rotate(" + currentRotation + "rad)";
+                canvas.style.webkitTransform = "rotate(" + currentRotation + "rad)"; // للمتصفحات القديمة جداً
+            }, 20); // تحديث دوري سريع وآمن تماماً
+        }
+
+        listenToBackend();
+    </script>
+</body>
+</html>
